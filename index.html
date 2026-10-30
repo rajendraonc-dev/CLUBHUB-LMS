@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClubHub LMS v3.0 — Ekstrakurikuler Tech & Lab Penjurusan</title>
+<style>
+  /* ============ RESET & BASE ============ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-0: #05060a;
+    --bg-1: #0b0d17;
+    --bg-2: #12152380;
+    --glass: rgba(20, 24, 40, 0.55);
+    --glass-border: rgba(120, 160, 255, 0.15);
+    --text: #e6ecff;
+    --text-dim: #8a93b2;
+    --text-mute: #5a6280;
+    --accent: #00e5ff;
+    --accent-2: #7c5cff;
+    --accent-3: #ff3ea5;
+    --success: #2ee6a8;
+    --warning: #ffbf3d;
+    --danger: #ff5470;
+    --radius: 14px;
+    --shadow: 0 10px 40px -10px rgba(0, 229, 255, 0.15);
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(124,92,255,0.25), transparent 60%),
+      radial-gradient(1000px 500px at 110% 10%, rgba(0,229,255,0.18), transparent 60%),
+      radial-gradient(800px 400px at 50% 120%, rgba(255,62,165,0.15), transparent 60%),
+      linear-gradient(180deg, var(--bg-0), var(--bg-1));
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea, select { font-family: inherit; color: inherit; }
+  ::selection { background: var(--accent); color: #000; }
+
+  /* ============ SCROLLBAR ============ */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(120,160,255,0.2); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(120,160,255,0.4); }
+
+  /* ============ UTILITIES ============ */
+  .hidden { display: none !important; }
+  .grid { display: grid; gap: 16px; }
+  .flex { display: flex; }
+  .center { display: flex; align-items: center; justify-content: center; }
+  .between { display: flex; align-items: center; justify-content: space-between; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.25);
+    color: var(--accent); font-size: 12px; font-weight: 600;
+  }
+  .chip.purple { background: rgba(124,92,255,0.1); border-color: rgba(124,92,255,0.3); color: #b9a7ff; }
+  .chip.pink { background: rgba(255,62,165,0.1); border-color: rgba(255,62,165,0.3); color: #ff8fc1; }
+  .chip.green { background: rgba(46,230,168,0.1); border-color: rgba(46,230,168,0.3); color: var(--success); }
+  .glow-text {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* ============ LOGIN SCREEN ============ */
+  #loginScreen {
+    min-height: 100vh;
+    display: grid; place-items: center;
+    padding: 24px;
+    position: relative;
+  }
+  .login-card {
+    width: 100%; max-width: 960px;
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: fadeUp 0.6s ease;
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .login-hero {
+    padding: 40px;
+    background:
+      linear-gradient(135deg, rgba(0,229,255,0.08), rgba(124,92,255,0.08)),
+      radial-gradient(circle at 30% 20%, rgba(255,62,165,0.15), transparent 50%);
+    border-right: 1px solid var(--glass-border);
+    position: relative;
+  }
+  .login-hero::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(120,160,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,160,255,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; position: relative; }
+  .brand-logo {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; color: #000; font-weight: 900;
+    box-shadow: 0 0 20px rgba(0,229,255,0.5);
+  }
+  .login-hero h1 { font-size: 34px; line-height: 1.15; margin: 28px 0 14px; font-weight: 800; position: relative; }
+  .login-hero p { color: var(--text-dim); line-height: 1.6; position: relative; }
+  .feature-list { margin-top: 28px; display: grid; gap: 12px; position: relative; }
+  .feature-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--glass-border);
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .feature-item:hover { transform: translateX(4px); border-color: rgba(0,229,255,0.4); }
+  .feature-icon {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 18px;
+    background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(124,92,255,0.2));
+  }
+  .feature-item h4 { font-size: 14px; margin-bottom: 2px; }
+  .feature-item p { font-size: 12px; color: var(--text-mute); margin: 0; }
+
+  .login-form { padding: 40px; display: flex; flex-direction: column; gap: 18px; }
+  .login-form h2 { font-size: 22px; margin-bottom: 4px; }
+  .login-form .sub { color: var(--text-dim); font-size: 14px; margin-bottom: 8px; }
+  .role-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .role-tab {
+    padding: 12px; border-radius: 12px; text-align: center;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+    font-weight: 600; font-size: 13px; transition: all 0.2s;
+  }
+  .role-tab:hover { border-color: rgba(0,229,255,0.3); }
+  .role-tab.active {
+    background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(124,92,255,0.15));
+    border-color: var(--accent); color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,229,255,0.2);
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input {
+    padding: 12px 14px; border-radius: 10px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+    color: var(--text); font-size: 14px; transition: all 0.2s;
+  }
+  .form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.15); }
+  select.form-input { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%238a93b2' d='M6 8L0 0h12z'/></svg>"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .btn {
+    padding: 13px 20px; border-radius: 12px; font-weight: 700; font-size: 14px;
+    transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #000; box-shadow: 0 8px 24px -8px rgba(0,229,255,0.5);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -8px rgba(0,229,255,0.7); }
+  .btn-ghost { background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); color: var(--text); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.08); }
+  .login-footer { text-align: center; font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+  .login-footer a { color: var(--accent); font-weight: 600; }
+  .login-footer a:hover { text-decoration: underline; }
+
+  /* ============ APP LAYOUT ============ */
+  #app { display: none; min-height: 100vh; }
+  .app-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: rgba(10, 12, 22, 0.8);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--glass-border);
+    padding: 24px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .sidebar .brand { padding: 0 8px 20px; border-bottom: 1px solid var(--glass-border); margin-bottom: 12px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: 10px;
+    color: var(--text-dim); font-weight: 500; font-size: 14px;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(124,92,255,0.12));
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(0,229,255,0.25);
+  }
+  .nav-icon { width: 20px; height: 20px; display: grid; place-items: center; font-size: 16px; }
+  .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--glass-border); }
+  .user-card {
+    display: flex; align-items: center; gap: 10px; padding: 10px;
+    border-radius: 12px; background: rgba(255,255,255,0.03);
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-weight: 700; color: #000;
+    flex-shrink: 0;
+  }
+  .user-card .name { font-size: 13px; font-weight: 600; }
+  .user-card .role { font-size: 11px; color: var(--text-mute); }
+
+  .main { padding: 28px 32px 80px; max-width: 100%; overflow-x: hidden; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
+  .topbar h1 { font-size: 26px; font-weight: 800; }
+  .topbar .sub { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 10px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+    min-width: 220px;
+  }
+  .search-box input { background: none; border: none; outline: none; color: var(--text); font-size: 13px; flex: 1; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border);
+    display: grid; place-items: center; transition: all 0.2s;
+    position: relative;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+  .icon-btn .dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-3); box-shadow: 0 0 8px var(--accent-3); }
+
+  /* ============ STATS CARDS ============ */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    padding: 20px; border-radius: var(--radius);
+    background: var(--glass); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(0,229,255,0.3); }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; right: 0; width: 120px; height: 120px;
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+    opacity: 0.08; filter: blur(20px);
+  }
+  .stat-label { color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 32px; font-weight: 800; margin: 8px 0 4px; }
+  .stat-sub { font-size: 12px; color: var(--text-mute); }
+  .stat-value.xp { color: var(--accent); text-shadow: 0 0 20px rgba(0,229,255,0.4); }
+  .stat-value.streak { color: var(--warning); }
+  .stat-value.rank { color: var(--accent-3); }
+
+  /* ============ MODULE CARDS ============ */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-header h2 { font-size: 18px; font-weight: 700; }
+  .section-header a { color: var(--accent); font-size: 13px; font-weight: 600; }
+  .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .module-card {
+    padding: 18px; border-radius: var(--radius);
+    background: var(--glass); border: 1px solid var(--glass-border);
+    cursor: pointer; transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .module-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transform: scaleX(0); transform-origin: left; transition: transform 0.3s;
+  }
+  .module-card:hover { transform: translateY(-4px); border-color: rgba(0,229,255,0.4); box-shadow: 0 10px 30px -10px rgba(0,229,255,0.3); }
+  .module-card:hover::before { transform: scaleX(1); }
+  .module-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center; font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .module-card[data-track="webdev"] .module-icon { background: linear-gradient(135deg, #00e5ff33, #00e5ff11); color: var(--accent); }
+  .module-card[data-track="cyber"] .module-icon { background: linear-gradient(135deg, #ff3ea533, #ff3ea511); color: var(--accent-3); }
+  .module-card[data-track="uiux"] .module-icon { background: linear-gradient(135deg, #7c5cff33, #7c5cff11); color: var(--accent-2); }
+  .module-card[data-track="tjkt"] .module-icon { background: linear-gradient(135deg, #2ee6a833, #2ee6a811); color: var(--success); }
+  .module-card[data-track="robot"] .module-icon { background: linear-gradient(135deg, #ffbf3d33, #ffbf3d11); color: var(--warning); }
+  .module-card h3 { font-size: 15px; margin-bottom: 4px; }
+  .module-card .desc { font-size: 12px; color: var(--text-mute); margin-bottom: 14px; }
+  .progress-bar { height: 6px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 0.8s ease; }
+  .module-card[data-track="webdev"] .progress-fill { background: linear-gradient(90deg, var(--accent), #7cf5ff); }
+  .module-card[data-track="cyber"] .progress-fill { background: linear-gradient(90deg, var(--accent-3), #ff7eb3); }
+  .module-card[data-track="uiux"] .progress-fill { background: linear-gradient(90deg, var(--accent-2), #b9a7ff); }
+  .module-card[data-track="tjkt"] .progress-fill { background: linear-gradient(90deg, var(--success), #7cf5d1); }
+  .module-card[data-track="robot"] .progress-fill { background: linear-gradient(90deg, var(--warning), #ffd97a); }
+  .progress-label { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text-dim); }
+
+  /* ============ WORKSPACE PANELS ============ */
+  .workspace { display: grid; gap: 16px; margin-bottom: 32px; }
+  .panel {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    border-radius: var(--radius); overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--glass-border);
+    background: rgba(0,0,0,0.2);
+  }
+  .panel-title { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; }
+  .panel-title .dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .panel-body { padding: 18px; }
+
+  /* Code Editor */
+  .code-editor { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 340px; }
+  .editor-pane { display: flex; flex-direction: column; }
+  .editor-pane + .editor-pane { border-left: 1px solid var(--glass-border); }
+  .editor-tabs { display: flex; gap: 2px; padding: 8px 12px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); }
+  .editor-tab { padding: 6px 12px; font-size: 12px; border-radius: 6px; color: var(--text-dim); font-family: var(--mono); }
+  .editor-tab.active { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .code-area {
+    flex: 1; padding: 14px; font-family: var(--mono); font-size: 13px; line-height: 1.6;
+    background: #07090f; color: #d6deff; outline: none; border: none; resize: none;
+    white-space: pre; overflow: auto;
+  }
+  .preview-frame { flex: 1; background: #fff; border: none; width: 100%; }
+  .editor-actions { padding: 10px 14px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--glass-border); display: flex; gap: 8px; }
+
+  /* CTF Terminal */
+  .terminal {
+    background: #05070d; font-family: var(--mono); font-size: 13px;
+    padding: 16px; min-height: 280px; color: #c8d1ff;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .terminal-line { margin-bottom: 4px; white-space: pre-wrap; word-break: break-word; }
+  .terminal-line.prompt::before { content: '$ '; color: var(--accent); }
+  .terminal-line.info { color: var(--text-dim); }
+  .terminal-line.success { color: var(--success); }
+  .terminal-line.error { color: var(--danger); }
+  .terminal-line.warn { color: var(--warning); }
+  .terminal-input-line { display: flex; align-items: center; gap: 6px; }
+  .terminal-input-line::before { content: '$'; color: var(--accent); }
+  .terminal-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #fff; font-family: var(--mono); font-size: 13px;
+  }
+  .ctf-challenge { padding: 16px; border-bottom: 1px solid var(--glass-border); background: rgba(255,62,165,0.04); }
+  .ctf-challenge h4 { color: var(--accent-3); font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .ctf-challenge p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+  /* Router CLI */
+  .router-cli { font-family: var(--mono); font-size: 13px; padding: 16px; background: #05070d; min-height: 260px; color: #c8d1ff; }
+  .router-line { margin-bottom: 3px; white-space: pre-wrap; }
+  .router-prompt { color: var(--success); }
+  .router-input {
+    width: 100%; background: none; border: none; outline: none;
+    color: #fff; font-family: var(--mono); font-size: 13px; margin-top: 6px;
+  }
+
+  /* Arduino */
+  .arduino-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .arduino-code { font-family: var(--mono); font-size: 12px; background: #05070d; padding: 14px; border-radius: 10px; color: #d6deff; min-height: 220px; outline: none; border: none; resize: vertical; width: 100%; line-height: 1.6; }
+  .arduino-board {
+    background: linear-gradient(135deg, #0a1628, #0f1e38);
+    border-radius: 10px; padding: 20px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 16px; min-height: 220px;
+    border: 1px solid var(--glass-border);
+  }
+  .led {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #2a0a0a; border: 2px solid #3a1515;
+    transition: all 0.2s;
+  }
+  .led.on {
+    background: radial-gradient(circle, #ff3d3d, #c40000);
+    box-shadow: 0 0 30px #ff3d3d, 0 0 60px rgba(255,61,61,0.5);
+    border-color: #ff6b6b;
+  }
+  .board-label { font-family: var(--mono); font-size: 11px; color: var(--text-mute); text-align: center; }
+
+  /* UI/UX Showcase */
+  .uiux-showcase {
+    min-height: 300px; display: grid; place-items: center;
+    background:
+      linear-gradient(135deg, rgba(124,92,255,0.1), rgba(255,62,165,0.1)),
+      repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.02) 20px, rgba(255,255,255,0.02) 40px);
+    border-radius: 10px; position: relative;
+  }
+  .figma-frame {
+    width: 80%; max-width: 400px; aspect-ratio: 16/10;
+    background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 12px; display: grid; place-items: center;
+    color: var(--text-mute); font-size: 13px;
+  }
+
+  /* Leaderboard */
+  .leaderboard-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .leaderboard-table th {
+    text-align: left; padding: 12px 16px; font-size: 11px;
+    color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--glass-border); font-weight: 700;
+  }
+  .leaderboard-table td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .leaderboard-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .rank-badge {
+    display: inline-grid; place-items: center; width: 28px; height: 28px;
+    border-radius: 8px; font-weight: 800; font-size: 12px;
+  }
+  .rank-1 { background: linear-gradient(135deg, #ffd700, #ff9500); color: #000; }
+  .rank-2 { background: linear-gradient(135deg, #c0c0c0, #8a8a8a); color: #000; }
+  .rank-3 { background: linear-gradient(135deg, #cd7f32, #8b4513); color: #fff; }
+  .rank-other { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+  .student-cell { display: flex; align-items: center; gap: 10px; }
+  .student-cell .avatar { width: 32px; height: 32px; font-size: 12px; }
+  .xp-cell { font-weight: 700; color: var(--accent); font-family: var(--mono); }
+
+  /* Resources */
+  .resources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .resource-card {
+    padding: 16px; border-radius: 12px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+    transition: all 0.2s; cursor: pointer;
+  }
+  .resource-card:hover { background: rgba(255,255,255,0.06); border-color: var(--accent); transform: translateY(-2px); }
+  .resource-icon { font-size: 24px; margin-bottom: 10px; }
+  .resource-card h4 { font-size: 14px; margin-bottom: 4px; }
+  .resource-card p { font-size: 12px; color: var(--text-mute); margin-bottom: 10px; }
+  .resource-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); }
+
+  /* AI Tutor Floating */
+  .ai-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 100;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 24px; color: #000;
+    box-shadow: 0 10px 30px -5px rgba(0,229,255,0.5);
+    cursor: pointer; transition: transform 0.2s;
+  }
+  .ai-fab:hover { transform: scale(1.08); }
+  .ai-fab::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 50%;
+    border: 2px solid var(--accent); opacity: 0;
+    animation: ring 2s infinite;
+  }
+  @keyframes ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+
+  .ai-chat {
+    position: fixed; bottom: 96px; right: 24px; z-index: 100;
+    width: 360px; max-width: calc(100vw - 48px); height: 500px; max-height: calc(100vh - 140px);
+    background: var(--bg-1); border: 1px solid var(--glass-border);
+    border-radius: 18px; display: none; flex-direction: column;
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.5);
+    animation: fadeUp 0.3s ease;
+  }
+  .ai-chat.open { display: flex; }
+  .ai-chat-header {
+    padding: 16px; border-bottom: 1px solid var(--glass-border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ai-chat-header .avatar { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .ai-chat-header .name { font-weight: 700; font-size: 14px; }
+  .ai-chat-header .status { font-size: 11px; color: var(--success); display: flex; align-items: center; gap: 4px; }
+  .ai-chat-header .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+  .ai-chat-close { margin-left: auto; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--text-dim); }
+  .ai-chat-close:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .ai-chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+  .msg.bot { background: rgba(255,255,255,0.05); border-bottom-left-radius: 4px; align-self: flex-start; }
+  .msg.user { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #000; border-bottom-right-radius: 4px; align-self: flex-end; font-weight: 500; }
+  .msg code { background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: var(--mono); font-size: 12px; }
+  .ai-chat-input {
+    padding: 12px; border-top: 1px solid var(--glass-border);
+    display: flex; gap: 8px; align-items: center;
+  }
+  .ai-chat-input input {
+    flex: 1; padding: 10px 14px; border-radius: 10px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border);
+    color: var(--text); font-size: 13px; outline: none;
+  }
+  .ai-chat-input input:focus { border-color: var(--accent); }
+  .ai-chat-input button {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #000; display: grid; place-items: center;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 24px; right: 24px; z-index: 200;
+    padding: 14px 20px; border-radius: 12px;
+    background: var(--glass); border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    transform: translateX(400px); transition: transform 0.3s;
+    font-size: 14px; font-weight: 500;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { border-color: var(--success); }
+  .toast.error { border-color: var(--danger); }
+
+  /* Mobile */
+  .mobile-toggle { display: none; }
+  @media (max-width: 900px) {
+    .login-card { grid-template-columns: 1fr; }
+    .login-hero { padding: 28px; }
+    .login-hero h1 { font-size: 26px; }
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed; left: 0; top: 0; z-index: 50;
+      transform: translateX(-100%); transition: transform 0.3s;
+      width: 260px;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .mobile-toggle { display: grid; }
+    .main { padding: 20px 16px 80px; }
+    .code-editor { grid-template-columns: 1fr; }
+    .editor-pane + .editor-pane { border-left: none; border-top: 1px solid var(--glass-border); }
+    .arduino-panel { grid-template-columns: 1fr; }
+    .topbar h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-hero">
+      <div class="brand">
+        <div class="brand-logo">C</div>
+        <span>ClubHub <span style="color:var(--text-mute);font-weight:500">LMS v3.0</span></span>
+      </div>
+      <h1 class="glow-text">Transformasi Talenta Digital Masa Depan Sekolah</h1>
+      <p>Platform pembelajaran terpadu berbasis modul praktik, tantangan CTF, simulasi TJKT & Robotik, serta AI Tutor 24/7.</p>
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-icon">🤖</div>
+          <div><h4>AI Tutor Assistant</h4><p>Code & CTF debugger 24/7</p></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🌐</div>
+          <div><h4>Simulator TJKT & Robotik</h4><p>Jaringan & mikrokontroler interaktif</p></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🏆</div>
+          <div><h4>Gamifikasi XP & Badge</h4><p>Leaderboard kompetisi sehat</p></div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div><h4>Siap Rilis 20 Hari Kerja</h4><p>Production-ready v3.0 UI</p></div>
+        </div>
+      </div>
+    </div>
+
+    <form class="login-form" id="loginForm" autocomplete="off">
+      <h2>Masuk ke Portal LMS</h2>
+      <p class="sub">Pilih peran akun dan masukkan kredensial kamu</p>
+
+      <div class="role-tabs" role="tablist">
+        <button type="button" class="role-tab active" data-role="student" role="tab">🎓 Siswa / Peserta</button>
+        <button type="button" class="role-tab" data-role="mentor" role="tab">👨‍🏫 Mentor / Pengajar</button>
+      </div>
+
+      <div class="form-group">
+        <label for="fullName">Nama Lengkap</label>
+        <input class="form-input" id="fullName" type="text" placeholder="cth. Maya Chen" required />
+      </div>
+
+      <div class="form-group" id="expertiseGroup">
+        <label for="expertise">Fokus Keahlian Utama</label>
+        <select class="form-input" id="expertise">
+          <option>Web Development</option>
+          <option>Cybersecurity (CTF)</option>
+          <option>UI/UX Design Studio</option>
+          <option>TJKT (Jaringan & Network)</option>
+          <option>Robotik & IoT</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="userId">Email Sekolah / User ID</label>
+        <input class="form-input" id="userId" type="text" placeholder="maya.chen@school.id" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Kata Sandi</label>
+        <input class="form-input" id="password" type="password" placeholder="••••••••" required />
+      </div>
+
+      <button type="submit" class="btn btn-primary">🚀 Masuk Sekarang</button>
+      <div class="login-footer">Belum punya akun? <a href="#" onclick="showToast('Fitur registrasi akan segera hadir!','success');return false;">Daftar Akun Baru</a></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app">
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">C</div>
+        <span>ClubHub <span style="color:var(--text-mute);font-weight:500">LMS</span></span>
+      </div>
+
+      <div class="nav-item active" data-view="dashboard"><span class="nav-icon">📊</span> Dashboard Utama</div>
+      <div class="nav-item" data-view="modules"><span class="nav-icon">🧪</span> Modul & Lab Keahlian</div>
+      <div class="nav-item" data-view="leaderboard"><span class="nav-icon">🏆</span> Leaderboard XP</div>
+      <div class="nav-item" data-view="resources"><span class="nav-icon">📚</span> Pusat Resource Lab</div>
+
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="avatar" id="userAvatar">MC</div>
+          <div style="flex:1;min-width:0;">
+            <div class="name" id="userName">Maya Chen</div>
+            <div class="role" id="userRole">Siswa • Web Dev</div>
+          </div>
+          <button class="icon-btn" onclick="logout()" title="Keluar" style="width:32px;height:32px;">⎋</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="topbar">
+        <div class="flex" style="gap:12px;align-items:center;">
+          <button class="icon-btn mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+          <div>
+            <h1 id="viewTitle">Selamat Datang, <span id="greetName">Maya</span> 👋</h1>
+            <div class="sub" id="viewSub">LMS Ekstrakurikuler Tech & Penjurusan Keahlian Digital Sekolah.</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="search-box">
+            <span>🔍</span>
+            <input placeholder="Cari modul, tantangan..." />
+          </div>
+          <button class="icon-btn" title="Notifikasi">🔔<span class="dot"></span></button>
+          <span class="chip green"><span style="width:6px;height:6px;border-radius:50%;background:var(--success);"></span> AI Engine Live</span>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total XP</div>
+            <div class="stat-value xp" id="statXP">2,480</div>
+            <div class="stat-sub">Poin pengalaman keseluruhan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Learning Streak</div>
+            <div class="stat-value streak">12 <span style="font-size:16px;color:var(--text-dim);">Hari 🔥</span></div>
+            <div class="stat-sub">Pertahankan ritme belajar!</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Peringkat Kelas</div>
+            <div class="stat-value rank">#3</div>
+            <div class="stat-sub">Dari 142 siswa terdaftar</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Modul Selesai</div>
+            <div class="stat-value" style="color:var(--success)">7 / 12</div>
+            <div class="stat-sub">58% progres keseluruhan</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h2>Modul & Lab Keahlian Kamu</h2>
+          <a href="#" onclick="switchView('modules');return false;">Lihat semua →</a>
+        </div>
+        <div class="modules-grid">
+          <div class="module-card" data-track="webdev" onclick="switchView('modules');setTimeout(()=>activateModule('webdev'),100);">
+            <div class="module-icon">💻</div>
+            <h3>Web Development</h3>
+            <div class="desc">Koding Live Preview</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:68%"></div></div>
+            <div class="progress-label"><span>HTML • CSS • JS</span><span>68%</span></div>
+          </div>
+          <div class="module-card" data-track="cyber" onclick="switchView('modules');setTimeout(()=>activateModule('cyber'),100);">
+            <div class="module-icon">🛡️</div>
+            <h3>Cybersecurity CTF</h3>
+            <div class="desc">Simulator Shell CLI</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:41%"></div></div>
+            <div class="progress-label"><span>101 Challenges</span><span>41%</span></div>
+          </div>
+          <div class="module-card" data-track="uiux" onclick="switchView('modules');setTimeout(()=>activateModule('uiux'),100);">
+            <div class="module-icon">🎨</div>
+            <h3>UI/UX Design Studio</h3>
+            <div class="desc">Showcase & Feedback</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:55%"></div></div>
+            <div class="progress-label"><span>3 Projects</span><span>55%</span></div>
+          </div>
+          <div class="module-card" data-track="tjkt" onclick="switchView('modules');setTimeout(()=>activateModule('tjkt'),100);">
+            <div class="module-icon">🌐</div>
+            <h3>TJKT & Network</h3>
+            <div class="desc">Simulasi IP & Subnetting</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:52%"></div></div>
+            <div class="progress-label"><span>Router Labs</span><span>52%</span></div>
+          </div>
+          <div class="module-card" data-track="robot" onclick="switchView('modules');setTimeout(()=>activateModule('robot'),100);">
+            <div class="module-icon">🤖</div>
+            <h3>Robotik & IoT</h3>
+            <div class="desc">Mikrokontroler Simulator</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:38%"></div></div>
+            <div class="progress-label"><span>Arduino Basics</span><span>38%</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULES VIEW -->
+      <section id="view-modules" class="hidden">
+        <div class="section-header">
+          <h2>🧪 Workspace Lab Keahlian</h2>
+          <div class="flex" style="gap:6px;flex-wrap:wrap;">
+            <button class="chip" data-module="webdev" onclick="activateModule('webdev')">💻 Web Dev</button>
+            <button class="chip purple" data-module="cyber" onclick="activateModule('cyber')">🛡️ CTF</button>
+            <button class="chip pink" data-module="uiux" onclick="activateModule('uiux')">🎨 UI/UX</button>
+            <button class="chip green" data-module="tjkt" onclick="activateModule('tjkt')">🌐 TJKT</button>
+            <button class="chip" data-module="robot" onclick="activateModule('robot')" style="background:rgba(255,191,61,0.1);border-color:rgba(255,191,61,0.3);color:var(--warning);">🤖 Robotik</button>
+          </div>
+        </div>
+
+        <!-- Web Dev Workspace -->
+        <div class="workspace module-workspace" id="ws-webdev">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot-live"></span> Web Dev Interactive Code Studio</div>
+              <span class="chip">Live Preview</span>
+            </div>
+            <div class="code-editor">
+              <div class="editor-pane">
+                <div class="editor-tabs">
+                  <div class="editor-tab active">index.html</div>
+                  <div class="editor-tab">style.css</div>
+                </div>
+                <textarea class="code-area" id="codeEditor" spellcheck="false"><!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(135deg, #00e5ff, #7c5cff);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    h1 { font-size: 2.5em; margin: 0; }
+    p { opacity: 0.9; }
+    button {
+      padding: 12px 24px;
+      border: 2px solid #fff;
+      background: transparent;
+      color: #fff;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: #fff; color: #000; }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Halo Siswa ClubHub! 👋</h1>
+    <p>Praktik Koding Interaktif Ekskul WebDev.</p>
+    <button onclick="alert('Kode berhasil dijalankan!')">Coba Klik</button>
+  </div>
+</body>
+</html></textarea>
+                <div class="editor-actions">
+                  <button class="btn btn-primary" onclick="runCode()" style="padding:8px 16px;font-size:13px;">▶ Jalankan Kode</button>
+                  <button class="btn btn-ghost" onclick="resetCode()" style="padding:8px 16px;font-size:13px;">↺ Reset</button>
+                </div>
+              </div>
+              <div class="editor-pane">
+                <div class="editor-tabs"><div class="editor-tab active">Live Preview</div></div>
+                <iframe class="preview-frame" id="codePreview"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cyber CTF Workspace -->
+        <div class="workspace module-workspace hidden" id="ws-cyber">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot-live"></span> Cybersecurity CTF Shell Lab</div>
+              <span class="chip pink">Challenge #101</span>
+            </div>
+            <div class="ctf-challenge">
+              <h4>🎯 Broken Auth & SQL Injection</h4>
+              <p>Sistem portal ini memiliki kerentanan logika login. Jalankan perintah terminal untuk menemukan petunjuk dan masukkan flag yang tepat.</p>
+              <p style="margin-top:6px;"><em>Petunjuk: Ketik <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">help</code>, <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">hint</code>, <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">ls</code>, atau <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">cat flag.txt</code> di terminal.</em></p>
+            </div>
+            <div class="terminal" id="ctfTerminal">
+              <div class="terminal-line info">Connecting to ctf.clubhub.dev:1337...</div>
+              <div class="terminal-line success">Connected to CTF Interactive Terminal Node.</div>
+              <div class="terminal-line info">Type 'help' for available commands.</div>
+              <div class="terminal-line info"> </div>
+              <div class="terminal-input-line">
+                <input class="terminal-input" id="ctfInput" placeholder="Ketik perintah..." autocomplete="off" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UI/UX Workspace -->
+        <div class="workspace module-workspace hidden" id="ws-uiux">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot-live"></span> UI/UX Design Studio Showcase</div>
+              <span class="chip purple">Figma Embed</span>
+            </div>
+            <div class="panel-body">
+              <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px;">Ruang pameran karya antarmuka, desain sistem, dan feedback rekan sejawat.</p>
+              <div class="uiux-showcase">
+                <div class="figma-frame">
+                  <div style="text-align:center;">
+                    <div style="font-size:40px;margin-bottom:8px;">🎨</div>
+                    <div>Frame Figma Embed Component</div>
+                    <div style="font-size:11px;margin-top:4px;">Karya: "ClubHub Mobile Redesign" by Maya</div>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+                <div class="resource-card"><div class="resource-icon">📐</div><h4>Design System</h4><p>Typography, Colors</p></div>
+                <div class="resource-card"><div class="resource-icon">🖼️</div><h4>Wireframes</h4><p>Low-fi prototypes</p></div>
+                <div class="resource-card"><div class="resource-icon">✨</div><h4>Hi-Fi Mockups</h4><p>Final designs</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TJKT Workspace -->
+        <div class="workspace module-workspace hidden" id="ws-tjkt">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot-live"></span> Lab Keahlian TJKT — Router Simulator</div>
+              <span class="chip green">Cisco IOS Style</span>
+            </div>
+            <div class="panel-body">
+              <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px;">Simulator konfigurasi IP Address, Subnetting, dan Routing CLI Router/Switch. Coba perintah: <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">show ip interface brief</code>, <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">configure terminal</code>, <code style="background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:4px;">help</code></p>
+              <div class="router-cli" id="routerCli">
+                <div class="router-line">Router></div>
+                <div class="router-line" style="color:var(--text-mute);">Type 'help' for available commands.</div>
+                <div style="display:flex;align-items:center;">
+                  <span class="router-prompt" id="routerPrompt">Router&gt; </span>
+                  <input class="router-input" id="routerInput" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Robotik Workspace -->
+        <div class="workspace module-workspace hidden" id="ws-robot">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title"><span class="dot-live"></span> Lab Robotik & Mikrokontroler IoT</div>
+              <span class="chip" style="background:rgba(255,191,61,0.1);border-color:rgba(255,191,61,0.3);color:var(--warning);">Arduino Simulator</span>
+            </div>
+            <div class="panel-body">
+              <p style="color:var(--text-dim);font-size:13px;margin-bottom:14px;">Simulator logika sensor hardware & kontroler otomatisasi mandiri. Klik "Upload & Run" untuk menjalankan kode.</p>
+              <div class="arduino-panel">
+                <div>
+                  <textarea class="arduino-code" id="arduinoCode" spellcheck="false">void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(9600);
+  Serial.println("Robot siap!");
+}
+
+void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(1000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
+}</textarea>
+                  <div style="margin-top:10px;display:flex;gap:8px;">
+                    <button class="btn btn-primary" onclick="runArduino()" style="padding:9px 16px;font-size:13px;">⚡ Upload & Run</button>
+                    <button class="btn btn-ghost" onclick="stopArduino()" style="padding:9px 16px;font-size:13px;">⏹ Stop</button>
+                  </div>
+                </div>
+                <div class="arduino-board">
+                  <div style="font-family:var(--mono);font-size:11px;color:var(--text-mute);">ARDUINO UNO R3</div>
+                  <div class="led" id="arduinoLed"></div>
+                  <div class="board-label" id="arduinoStatus">Status: Idle</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD VIEW -->
+      <section id="view-leaderboard" class="hidden">
+        <div class="section-header">
+          <h2>🏆 Papan Peringkat XP Siswa</h2>
+          <span class="chip">Kompetisi sehat berbasis poin pengalaman</span>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top Performers — Minggu Ini</div>
+            <span class="chip green">Live</span>
+          </div>
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Nama Siswa</th>
+                <th>Track Keahlian</th>
+                <th>XP Points</th>
+                <th>Streak</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- RESOURCES VIEW -->
+      <section id="view-resources" class="hidden">
+        <div class="section-header">
+          <h2>📚 Pusat Resource & Dokumentasi Lab</h2>
+          <span class="chip">Cheatsheet & Materi</span>
+        </div>
+        <div class="resources-grid">
+          <div class="resource-card" onclick="showToast('Mengunduh HTML-CSS-Cheatsheet.pdf...','success')">
+            <div class="resource-icon">💻</div>
+            <h4>HTML & CSS Cheatsheet</h4>
+            <p>Panduan lengkap tag, selector, dan layout modern.</p>
+            <div class="resource-meta"><span>PDF • 2.4 MB</span><span>⬇ Unduh</span></div>
+          </div>
+          <div class="resource-card" onclick="showToast('Mengunduh JS-ES6-Guide.pdf...','success')">
+            <div class="resource-icon">⚡</div>
+            <h4>JavaScript ES6+ Guide</h4>
+            <p>Arrow function, async/await, destructuring.</p>
+            <div class="resource-meta"><span>PDF • 3.1 MB</span><span>⬇ Unduh</span></div>
+          </div>
+          <div class="resource-card" onclick="showToast('Mengunduh CTF-Beginner.pdf...','success')">
+            <div class="resource-icon">🛡️</div>
+            <h4>CTF Beginner Handbook</h4>
+            <p>SQLi, XSS, Broken Auth, dan reverse engineering dasar.</p>
+            <div class="resource-meta"><span>PDF • 5.8 MB</span><span>⬇ Unduh</span></div>
+          </div>
+          <div class="resource-card" onclick="showToast('Mengunduh Subnetting-Cheat.pdf...','success')">
+            <div class="resource-icon">🌐</div>
+            <h4>Subnetting Cheat Sheet</h4>
+            <p>CIDR, binary conversion, VLSM praktis.</p>
+            <div class="resource-meta"><span>PDF • 1.2 MB</span><span>⬇ Unduh</span></div>
+          </div>
+          <div class="resource-card" onclick="showToast('Mengunduh Arduino-Projects.pdf...','success')">
+            <div class="resource-icon">🤖</div>
+            <h4>Arduino Project Book</h4>
+            <p>20 proyek IoT dari dasar hingga mahir.</p>
+            <div class="resource-meta"><span>PDF • 8.4 MB</span><span>⬇ Unduh</span></div>
+          </div>
+          <div class="resource-card" onclick="showToast('Mengunduh UIUX-Principles.pdf...','success')">
+            <div class="resource-icon">🎨</div>
+            <h4>UI/UX Design Principles</h4>
+            <p>Hukum Gestalt, hierarki visual, accessibility.</p>
+            <div class="resource-meta"><span>PDF • 4.2 MB</span><span>⬇ Unduh</span></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- AI Tutor FAB & Chat -->
+  <button class="ai-fab" id="aiFab" onclick="toggleAIChat()" title="AI Tutor Assistant">🤖</button>
+  <div class="ai-chat" id="aiChat">
+    <div class="ai-chat-header">
+      <div class="avatar">🤖</div>
+      <div>
+        <div class="name">AI Tutor ClubHub</div>
+        <div class="status">Online 24/7</div>
+      </div>
+      <button class="ai-chat-close" onclick="toggleAIChat()">✕</button>
+    </div>
+    <div class="ai-chat-body" id="aiChatBody">
+      <div class="msg bot">Halo! 👋 Saya <b>AI Tutor ClubHub</b>. Ada pertanyaan seputar bug koding, petunjuk CTF, atau modul TJKT?</div>
+      <div class="msg bot">Coba tanya: <code>"bagaimana cara debug CSS?"</code> atau <code>"hint CTF #101"</code></div>
+    </div>
+    <form class="ai-chat-input" id="aiChatForm" onsubmit="sendAIMessage(event)">
+      <input id="aiInput" placeholder="Tanyakan sesuatu..." autocomplete="off" />
+      <button type="submit" title="Kirim">➤</button>
+    </form>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ STATE ============ */
+const state = {
+  user: null,
+  role: 'student',
+  currentView: 'dashboard',
+  currentModule: 'webdev',
+  arduinoInterval: null
+};
+
+const defaultCode = document.getElementById('codeEditor').value;
+
+/* ============ LOGIN ============ */
+document.querySelectorAll('.role-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.role = tab.dataset.role;
+    const expGroup = document.getElementById('expertiseGroup');
+    if (state.role === 'mentor') {
+      expGroup.style.opacity = '0.5';
+      expGroup.style.pointerEvents = 'none';
+    } else {
+      expGroup.style.opacity = '1';
+      expGroup.style.pointerEvents = 'auto';
+    }
+  });
+});
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('fullName').value.trim();
+  const userId = document.getElementById('userId').value.trim();
+  const password = document.getElementById('password').value;
+  const expertise = document.getElementById('expertise').value;
+
+  if (!name || !userId || !password) {
+    showToast('Mohon lengkapi semua field!', 'error');
+    return;
+  }
+  if (password.length < 4) {
+    showToast('Kata sandi minimal 4 karakter!', 'error');
+    return;
+  }
+
+  state.user = { name, userId, expertise };
+  const firstName = name.split(' ')[0];
+  const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userRole').textContent = (state.role === 'mentor' ? 'Mentor' : 'Siswa') + ' • ' + expertise.split(' ')[0];
+  document.getElementById('userAvatar').textContent = initials;
+  document.getElementById('greetName').textContent = firstName;
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  showToast(`Selamat datang, ${firstName}! 🎉`, 'success');
+  initLeaderboard();
+  runCode();
+});
+
+function logout() {
+  if (!confirm('Keluar dari ClubHub LMS?')) return;
+  state.user = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'grid';
+  document.getElementById('loginForm').reset();
+  showToast('Berhasil keluar.', 'success');
+}
+
+/* ============ NAVIGATION ============ */
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => switchView(item.dataset.view));
+});
+
+function switchView(view) {
+  state.currentView = view;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  ['dashboard', 'modules', 'leaderboard', 'resources'].forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) el.classList.toggle('hidden', v !== view);
+  });
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function activateModule(mod) {
+  state.currentModule = mod;
+  document.querySelectorAll('.module-workspace').forEach(w => w.classList.add('hidden'));
+  const ws = document.getElementById('ws-' + mod);
+  if (ws) ws.classList.remove('hidden');
+  if (mod === 'cyber') setTimeout(() => document.getElementById('ctfInput').focus(), 100);
+  if (mod === 'tjkt') setTimeout(() => document.getElementById('routerInput').focus(), 100);
+}
+
+/* ============ CODE EDITOR ============ */
+function runCode() {
+  const code = document.getElementById('codeEditor').value;
+  const iframe = document.getElementById('codePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(code);
+  doc.close();
+  showToast('Kode berhasil dijalankan ▶', 'success');
+}
+function resetCode() {
+  document.getElementById('codeEditor').value = defaultCode;
+  runCode();
+}
+
+/* ============ CTF TERMINAL ============ */
+const ctfCommands = {
+  help: () => [
+    { text: 'Available commands:', cls: 'info' },
+    { text: '  help      - Tampilkan bantuan', cls: 'info' },
+    { text: '  hint      - Petunjuk tantangan', cls: 'info' },
+    { text: '  ls        - List files', cls: 'info' },
+    { text: '  cat <f>   - Baca file', cls: 'info' },
+    { text: '  whoami    - Info user', cls: 'info' },
+    { text: '  clear     - Bersihkan terminal', cls: 'info' },
+    { text: '  submit <flag> - Submit flag', cls: 'info' }
+  ],
+  hint: () => [
+    { text: '🎯 Petunjuk CTF #101:', cls: 'warn' },
+    { text: 'Coba jalankan "ls" untuk melihat file, lalu "cat flag.txt"', cls: 'info' },
+    { text: 'Flag berformat: FLAG{...}', cls: 'info' }
+  ],
+  ls: () => [
+    { text: 'drwxr-xr-x  2 ctf ctf 4096 Oct 21 10:00 .', cls: 'info' },
+    { text: 'drwxr-xr-x  5 ctf ctf 4096 Oct 21 09:30 ..', cls: 'info' },
+    { text: '-rw-r--r--  1 ctf ctf  245 Oct 21 10:00 readme.md', cls: 'info' },
+    { text: '-rw-------  1 ctf ctf   42 Oct 21 10:00 flag.txt', cls: 'warn' },
+    { text: '-rwxr-xr-x  1 ctf ctf 1024 Oct 21 10:00 login.php', cls: 'info' }
+  ],
+  whoami: () => [{ text: 'ctf-player@clubhub', cls: 'success' }],
+  'cat readme.md': () => [
+    { text: '# CTF Challenge #101', cls: 'info' },
+    { text: 'Broken Authentication & SQL Injection', cls: 'info' },
+    { text: 'Temukan flag tersembunyi di sistem ini.', cls: 'info' }
+  ],
+  'cat flag.txt': () => [
+    { text: '🎉 FLAG{b4d_4uth_1s_n0t_s4f3_2026}', cls: 'success' },
+    { text: 'Salin flag di atas dan ketik: submit FLAG{...}', cls: 'info' }
+  ],
+  'cat login.php': () => [
+    { text: '<?php', cls: 'info' },
+    { text: '  // BUG: SQL Injection vulnerability!', cls: 'warn' },
+    { text: '  $query = "SELECT * FROM users WHERE user=\'".$_POST[\'u\']."\'";', cls: 'error' },
+    { text: '?>', cls: 'info' }
+  ],
+  clear: () => 'CLEAR'
+};
+
+document.getElementById('ctfInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const input = e.target;
+    const cmd = input.value.trim().toLowerCase();
+    input.value = '';
+    if (!cmd) return;
+    processCTFCommand(cmd);
+  }
+});
+
+function processCTFCommand(cmd) {
+  const term = document.getElementById('ctfTerminal');
+  const inputLine = term.querySelector('.terminal-input-line');
+
+  // Echo command
+  const echo = document.createElement('div');
+  echo.className = 'terminal-line prompt';
+  echo.textContent = cmd;
+  term.insertBefore(echo, inputLine);
+
+  if (cmd === 'clear') {
+    Array.from(term.children).forEach(c => { if (c !== inputLine) c.remove(); });
+    return;
+  }
+
+  if (cmd.startsWith('submit ')) {
+    const flag = cmd.slice(7).trim();
+    const res = document.createElement('div');
+    if (flag === 'FLAG{b4d_4uth_1s_n0t_s4f3_2026}') {
+      res.className = 'terminal-line success';
+      res.textContent = '✅ Correct! +500 XP. Challenge #101 solved!';
+      addXP(500);
+    } else {
+      res.className = 'terminal-line error';
+      res.textContent = '❌ Wrong flag. Try again.';
+    }
+    term.insertBefore(res, inputLine);
+    term.scrollTop = term.scrollHeight;
+    return;
+  }
+
+  const handler = ctfCommands[cmd];
+  if (handler) {
+    const result = handler();
+    result.forEach(line => {
+      const div = document.createElement('div');
+      div.className = 'terminal-line ' + (line.cls || '');
+      div.textContent = line.text;
+      term.insertBefore(div, inputLine);
+    });
+  } else {
+    const err = document.createElement('div');
+    err.className = 'terminal-line error';
+    err.textContent = `bash: ${cmd}: command not found. Type 'help' for commands.`;
+    term.insertBefore(err, inputLine);
+  }
+  term.scrollTop = term.scrollHeight;
+}
+
+/* ============ ROUTER CLI ============ */
+let routerMode = 'user'; // user | config | config-if
+let routerConfig = {
+  'GigabitEthernet0/0': { ip: '192.168.10.1', mask: '255.255.255.0', status: 'up' },
+  'GigabitEthernet0/1': { ip: 'unassigned', mask: 'unset', status: 'administratively down' }
+};
+let currentIf = null;
+
+const routerInput = document.getElementById('routerInput');
+routerInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const cmd = routerInput.value.trim();
+    routerInput.value = '';
+    if (cmd) processRouterCommand(cmd);
+  }
+});
+
+function getRouterPrompt() {
+  if (routerMode === 'config-if') return `Router(config-if)# `;
+  if (routerMode === 'config') return `Router(config)# `;
+  return `Router> `;
+}
+function updateRouterPrompt() {
+  document.getElementById('routerPrompt').textContent = getRouterPrompt();
+}
+
+function routerPrint(text, cls) {
+  const cli = document.getElementById('routerCli');
+  const inputRow = cli.lastElementChild;
+  const line = document.createElement('div');
+  line.className = 'router-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  cli.insertBefore(line, inputRow);
+}
+
+function processRouterCommand(cmd) {
+  const c = cmd.toLowerCase();
+  routerPrint(getRouterPrompt() + cmd);
+
+  if (c === 'help' || c === '?') {
+    routerPrint('Available commands:');
+    routerPrint('  enable                 - Masuk mode privileged');
+    routerPrint('  configure terminal     - Masuk mode konfigurasi');
+    routerPrint('  interface <name>       - Pilih interface');
+    routerPrint('  ip address <ip> <mask> - Set IP address');
+    routerPrint('  no shutdown            - Aktifkan interface');
+    routerPrint('  show ip interface brief - Lihat status');
+    routerPrint('  exit                   - Keluar mode');
+    routerPrint('  clear                  - Bersihkan');
+  } else if (c === 'clear') {
+    const cli = document.getElementById('routerCli');
+    Array.from(cli.children).forEach((el, i, arr) => { if (i < arr.length - 1) el.remove(); });
+  } else if (c === 'enable') {
+    routerMode = 'privileged';
+    updateRouterPrompt();
+    document.getElementById('routerPrompt').textContent = 'Router# ';
+  } else if (c === 'configure terminal' || c === 'conf t') {
+    routerMode = 'config';
+    routerPrint('Enter configuration commands, one per line. End with CNTL/Z.');
+    updateRouterPrompt();
+  } else if (c.startsWith('interface ')) {
+    if (routerMode !== 'config') { routerPrint('% Invalid input detected at \'^\' marker', 'error'); return; }
+    const ifName = cmd.split(' ').slice(1).join(' ');
+    if (!routerConfig[ifName]) { routerPrint(`% Interface ${ifName} not found`, 'error'); return; }
+    currentIf = ifName;
+    routerMode = 'config-if';
+    updateRouterPrompt();
+  } else if (c.startsWith('ip address ')) {
+    if (routerMode !== 'config-if' || !currentIf) { routerPrint('% Command not valid in this mode', 'error'); return; }
+    const parts = cmd.split(' ');
+    if (parts.length < 4) { routerPrint('% Incomplete command. Usage: ip address <ip> <mask>', 'error'); return; }
+    routerConfig[currentIf].ip = parts[2];
+    routerConfig[currentIf].mask = parts[3];
+    routerPrint(`[OK] Interface ${currentIf} IP Configured Successfully.`, 'success');
+    addXP(25);
+  } else if (c === 'no shutdown') {
+    if (routerMode !== 'config-if' || !currentIf) { routerPrint('% Command not valid in this mode', 'error'); return; }
+    routerConfig[currentIf].status = 'up';
+    routerPrint(`%LINK-3-UPDOWN: Interface ${currentIf}, changed state to up`, 'success');
+    addXP(15);
+  } else if (c === 'show ip interface brief') {
+    routerPrint('Interface              IP-Address      OK? Method Status');
+    Object.entries(routerConfig).forEach(([name, cfg]) => {
+      routerPrint(`${name.padEnd(23)}${cfg.ip.padEnd(16)}YES manual ${cfg.status}`);
+    });
+  } else if (c === 'exit') {
+    if (routerMode === 'config-if') { routerMode = 'config'; currentIf = null; }
+    else if (routerMode === 'config') { routerMode = 'privileged'; routerPrint('end'); }
+    else { routerMode = 'user'; }
+    updateRouterPrompt();
+  } else {
+    routerPrint(`% Unknown command: "${cmd}"`, 'error');
+  }
+  const cli = document.getElementById('routerCli');
+  cli.scrollTop = cli.scrollHeight;
+}
+
+/* ============ ARDUINO SIM ============ */
+function runArduino() {
+  stopArduino();
+  const code = document.getElementById('arduinoCode').value;
+  const status = document.getElementById('arduinoStatus');
+  status.textContent = 'Status: Compiling...';
+  status.style.color = 'var(--warning)';
+
+  setTimeout(() => {
+    status.textContent = 'Status: Uploading...';
+    setTimeout(() => {
+      status.textContent = 'Status: Running ✓';
+      status.style.color = 'var(--success)';
+      // Parse delay from code
+      const delayMatch = code.match(/delay\((\d+)\)/);
+      const delayMs = delayMatch ? parseInt(delayMatch[1]) : 1000;
+      const led = document.getElementById('arduinoLed');
+      let on = false;
+      state.arduinoInterval = setInterval(() => {
+        on = !on;
+        led.classList.toggle('on', on);
+      }, delayMs);
+      showToast('Kode Arduino berhasil di-upload ⚡', 'success');
+      addXP(20);
+    }, 500);
+  }, 500);
+}
+function stopArduino() {
+  if (state.arduinoInterval) { clearInterval(state.arduinoInterval); state.arduinoInterval = null; }
+  document.getElementById('arduinoLed').classList.remove('on');
+  const status = document.getElementById('arduinoStatus');
+  if (status.textContent.includes('Running')) {
+    status.textContent = 'Status: Stopped';
+    status.style.color = 'var(--text-dim)';
+  }
+}
+
+/* ============ LEADERBOARD ============ */
+function initLeaderboard() {
+  const students = [
+    { name: 'Rafi Ardiansyah', track: 'Cybersecurity', xp: 3240, streak: 18 },
+    { name: 'Salsabila Nur', track: 'Web Development', xp: 2980, streak: 15 },
+    { name: 'Maya Chen', track: 'Web Development', xp: 2480, streak: 12, isMe: true },
+    { name: 'Budi Santoso', track: 'TJKT', xp: 2310, streak: 9 },
+    { name: 'Aisyah Putri', track: 'UI/UX Design', xp: 2150, streak: 14 },
+    { name: 'Dimas Prayoga', track: 'Robotik & IoT', xp: 1980, streak: 7 },
+    { name: 'Lestari Wulandari', track: 'Cybersecurity', xp: 1820, streak: 11 },
+    { name: 'Fajar Hidayat', track: 'Web Development', xp: 1650, streak: 6 },
+    { name: 'Nadia Kirana', track: 'UI/UX Design', xp: 1480, streak: 8 },
+    { name: 'Reza Firmansyah', track: 'TJKT', xp: 1290, streak: 5 }
+  ];
+  const tbody = document.getElementById('leaderboardBody');
+  tbody.innerHTML = students.map((s, i) => {
+    const rank = i + 1;
+    const rankCls = rank <= 3 ? `rank-${rank}` : 'rank-other';
+    const initials = s.name.split(' ').map(n => n[0]).slice(0, 2).join('');
+    const rowStyle = s.isMe ? 'background:rgba(0,229,255,0.05);' : '';
+    return `
+      <tr style="${rowStyle}">
+        <td><span class="rank-badge ${rankCls}">${rank}</span></td>
+        <td>
+          <div class="student-cell">
+            <div class="avatar" style="background:linear-gradient(135deg,hsl(${rank*30},70%,55%),hsl(${rank*30+60},70%,45%));">${initials}</div>
+            <div>
+              <div style="font-weight:600;">${s.name} ${s.isMe ? '<span class="chip" style="font-size:10px;padding:2px 6px;">YOU</span>' : ''}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="chip" style="font-size:11px;">${s.track}</span></td>
+        <td class="xp-cell">${s.xp.toLocaleString('id-ID')} XP</td>
+        <td>🔥 ${s.streak} hari</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ============ AI CHAT ============ */
+function toggleAIChat() {
+  document.getElementById('aiChat').classList.toggle('open');
+}
+
+const aiResponses = {
+  'css': 'Untuk debug CSS, coba gunakan <b>DevTools</b> browser (F12). Inspect element untuk melihat styling yang aktif. Gunakan <code>outline: 1px solid red;</code> untuk memvisualisasikan box model!',
+  'ctf': 'Untuk CTF #101, coba perintah <code>ls</code> di terminal untuk melihat file, lalu <code>cat flag.txt</code>. Format flag: <code>FLAG{...}</code>',
+  'sql': 'SQL Injection adalah teknik menyisipkan query SQL melalui input. Contoh: <code>\' OR 1=1 --</code>. Selalu gunakan parameterized queries untuk mencegah!',
+  'subnet': 'Subnetting: bagi alamat IP menjadi network & host. Rumus: 2^(32-CIDR) = total host. Contoh /24 = 256 alamat. Gunakan cheatsheet di Resource Center!',
+  'arduino': 'Untuk Arduino, pastikan <code>pinMode()</code> di <code>setup()</code> dan gunakan <code>digitalWrite()</code> di <code>loop()</code>. Delay dalam milidetik (1000 = 1 detik).',
+  'default': 'Pertanyaan menarik! 🤔 Saya bisa bantu seputar: <b>Web Dev, CTF, TJKT, UI/UX, Robotik</b>. Coba tanya lebih spesifik ya!'
+};
+
+function sendAIMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const body = document.getElementById('aiChatBody');
+
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = text;
+  body.appendChild(userMsg);
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+
+  setTimeout(() => {
+    const lower = text.toLowerCase();
+    let response = aiResponses.default;
+    if (lower.includes('css') || lower.includes('debug')) response = aiResponses.css;
+    else if (lower.includes('ctf') || lower.includes('flag')) response = aiResponses.ctf;
+    else if (lower.includes('sql') || lower.includes('injection')) response = aiResponses.sql;
+    else if (lower.includes('subnet') || lower.includes('ip') || lower.includes('tjkt')) response = aiResponses.subnet;
+    else if (lower.includes('arduino') || lower.includes('robot') || lower.includes('led')) response = aiResponses.arduino;
+    else if (lower.includes('halo') || lower.includes('hai') || lower.includes('hi')) response = 'Halo juga! 👋 Ada yang bisa saya bantu hari ini?';
+    else if (lower.includes('terima kasih') || lower.includes('thanks')) response = 'Sama-sama! 😊 Semangat belajarnya!';
+
+    const botMsg = document.createElement('div');
+    botMsg.className = 'msg bot';
+    botMsg.innerHTML = response;
+    body.appendChild(botMsg);
+    body.scrollTop = body.scrollHeight;
+  }, 600);
+}
+
+/* ============ XP & TOAST ============ */
+function addXP(amount) {
+  const el = document.getElementById('statXP');
+  const current = parseInt(el.textContent.replace(/[^0-9]/g, ''));
+  const target = current + amount;
+  let step = current;
+  const inc = Math.ceil((target - current) / 20);
+  const timer = setInterval(() => {
+    step += inc;
+    if (step >= target) { step = target; clearInterval(timer); }
+    el.textContent = step.toLocaleString('id-ID');
+  }, 30);
+  showToast(`+${amount} XP diperoleh! 🎉`, 'success');
+}
+
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = (type === 'success' ? '✅ ' : '⚠️ ') + msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+/* ============ INIT ============ */
+window.addEventListener('load', () => {
+  // Pre-fill preview
+  setTimeout(runCode, 300);
+});
+</script>
+</body>
+</html>
